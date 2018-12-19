@@ -11,4 +11,5 @@ logging
 After you built your environment and fill your information into setting.json with the same format, cd to the folder you store the files, and input the command in terminal
 
 `python select_seats.py`
+
 You can build a task schedule to run it before 22:00 everyday.
