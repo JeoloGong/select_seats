@@ -75,18 +75,19 @@ def get_data_forms(data_json):
     data_forms = []
     studyroom = setting["studyroom"]
     while(studyroom):
-        if studyroom == ("3S" or "3s"):
+        if studyroom == "3S" or studyroom == "3s":
             seats = list(SEATS.t_s[i] for i in setting["seats"])
             break
-        if studyroom == ("3N" or "3n"):
+        elif studyroom == "3N" or studyroom == "3n":
             seats = list(SEATS.t_n[i] for i in setting["seats"])
             break
-        if studyroom == ("2S" or "2s"):
+        elif studyroom == "2S" or studyroom == "2s":
             seats = list(SEATS.s_s[i] for i in setting["seats"])
             break
-        if studyroom == ("2N" or "2n"):
+        elif studyroom == "2N" or studyroom == "2n":
             seats = list(SEATS.s_n[i] for i in setting["seats"])
             break
+        break
     seatBooker = get_id(data_json)
     for i in seats:
         data_form = {
