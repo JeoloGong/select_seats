@@ -10,6 +10,7 @@ def get_setting():
         setting = json.load(f)
     return setting
 
+
 def get_data_json():
     data_json = {
     "login_name":"",
@@ -21,16 +22,11 @@ def get_data_json():
     }
     data_json["login_name"] = setting['number']
     data_json["password"] = setting['password']
-    (data_json["code"], data_json["str"]) = code_and_str()
+    preview = json.loads(requests\
+    .get('https://jxnu.huitu.zhishulib.com/User/Index/login?forward=/Seat/Index/searchSeats&LAB_JSON=1').text)
+    data_json["code"] = preview['content']['data']['code']
+    data_json["str"] = preview['content']['data']['str']
     return data_json
-
-
-def code_and_str():
-    r = requests.get('https://jxnu.huitu.zhishulib.com/User/Index/login?forward=/Seat/Index/searchSeats&LAB_JSON=1')
-    preview = json.loads(r.text)
-    code = preview['content']['data']['code']
-    str_ = preview['content']['data']['str']
-    return (code,str_)
 
 
 # def get_cookies(data_json):
@@ -50,12 +46,6 @@ def code_and_str():
 #         i = i.replace('\"','')
 #         cookies += i
 #     return cookies
-
-
-def get_id(data_json):
-    r = requests.post("https://jxnu.huitu.zhishulib.com/api/1/login", json = data_json)
-    preview = json.loads(r.text)
-    return preview['id']
 
 
 def set_begintime():
@@ -88,7 +78,7 @@ def get_data_forms(data_json):
             seats = list(SEATS.s_n[i] for i in setting["seats"])
             break
         break
-    seatBooker = get_id(data_json)
+    seatBooker = Booker
     for i in seats:
         data_form = {
         'beginTime': '',
@@ -108,7 +98,8 @@ def get_data_forms(data_json):
 
 def connecting(data_form):
     try:
-        r = requests.post(url, data = data_form, cookies = cookies,timeout = 3 )       
+        r = requests.post('https://jxnu.huitu.zhishulib.com/Seat/Index/bookSeats?LAB_JSON=1',\
+        data = data_form, cookies = cookies,timeout = 3 )       
         while(r.status_code!=200):
             logging.info("status_code = "+ r.status_code + ", retry...")
             return connecting(data_form)
@@ -130,11 +121,10 @@ logging.basicConfig(filename='status.log', level=logging.DEBUG, format=LOG_FORMA
 
 setting = get_setting()
 data_json = get_data_json()
-url = 'https://jxnu.huitu.zhishulib.com/Seat/Index/bookSeats?LAB_JSON=1'
+login = requests.post("https://jxnu.huitu.zhishulib.com/api/1/login", json = data_json)
+cookies = login.cookies.get_dict()
+Booker = json.loads(login.text)['id']
 data_forms = get_data_forms(data_json)
-header = {}
-cookies=requests.post("https://jxnu.huitu.zhishulib.com/api/1/login", json = data_json).cookies.get_dict()
-
 
 
 r = connecting(data_forms[0])
@@ -146,7 +136,7 @@ while result == 'fail':
     n = n+1
     # print(data_forms[n%len(data_forms)]['seats[0]'])
     r = connecting(data_forms[n%len(data_forms)])
-    # print(r)
+    print(r)
     preview = json.loads(r.text)
     result = preview['DATA']['result']
 
