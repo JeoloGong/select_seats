@@ -8,8 +8,8 @@ logging
 (All in the last version can run)  
 
 ## Parameter Setting
-"number":"201526701089",    //学号  
-"password":"666666",        //登录密码  
+"number":"************",    //学号  
+"password":"******",        //登录密码  
 "date":"today",             //选座日期，默认日期为次日，当参数为"today"时，选择当日的座位  
 "beginTime":10,             //开始时间  
 "duration":12,              //学习时长  
