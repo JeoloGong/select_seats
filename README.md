@@ -7,9 +7,18 @@ requests
 logging
 (All in the last version can run)
 
+## Parameter Setting
+"number":"201526701089",    //学号
+"password":"666666",        //登录密码
+"date":"today",             //选座日期，默认日期为次日，当参数为"today"时，选择当日的座位
+"beginTime":10,             //开始时间
+"duration":12,              //学习时长
+"studyroom":"3S",           //选择自习室（3楼南:"3S"或"3s"，3楼北:"3N"或"3n"，2楼南:"2S"或"2s"，2楼北:"2N"或"2n"）
+"seats":["374"]             //选择座位，若要在两个或多个座位中随机选择，则将格式更改为["1"，"2"]
+
 ## Usage
 After you built your environment and fill your information into setting.json with the same format, cd to the folder you store the files, and input the command in terminal
 
-`python select_seats.py`
-
+`python select_seats.py setting.json `
 You can build a task schedule to run it before 22:00 everyday.
+
