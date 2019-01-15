@@ -1,7 +1,9 @@
 {
     "number":"************",
     "password":"******",
+    "date":"today",
     "beginTime":10,
     "duration":12,
-    "seats":["28219","28220","28221","28218","28217"]
+    "studyroom":"3S",
+    "seats":["374"]
 }
