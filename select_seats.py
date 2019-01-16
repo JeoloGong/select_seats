@@ -1,8 +1,9 @@
-import requests
+import datetime
 import json
 import logging
-import SEATS
 import sys
+import requests
+import SEATS
 
 
 def get_setting():
@@ -29,30 +30,35 @@ def get_data_json():
     return data_json
 
 
-# def get_cookies(data_json):
-#     import http.cookiejar as cj
-#     s = requests.session()
-#     s.cookies = cj.LWPCookieJar()
-#     s.post("https://jxnu.huitu.zhishulib.com/api/1/login", json = data_json )
-#     s.close()
-#     fp = open("cookies.txt", "r")
-#     t = fp.readlines()
-#     fp.close()
-#     cookies = ''
-#     for i in t[1:]:
-#         start_pos = i.find("Set-Cookie3: ")+13
-#         end_pos = i.find(";")+1
-#         i = i[start_pos:end_pos]
-#         i = i.replace('\"','')
-#         cookies += i
-#     return cookies
+def search_used_seats():
+    r = requests.post("https://jxnu.huitu.zhishulib.com/Seat/Index/searchSeats?LAB_JSON=1",\
+    data = search_data_form, cookies = cookies)
+    all_seats = json.loads(r.text)['data']['POIs']
+    used_seats = {}
+    for i in all_seats:
+        if i['state'] == 0:
+            used_seats[i['title']] = i['id']
+    return used_seats
+
+
+def get_best_seat(used_seats):
+    if setting["seat"] in used_seats:
+        best_seat = used_seats[setting["seat"]]
+        return best_seat
+
+    distinct = 9999
+    for i in used_seats:
+        temp = abs(int(i)-int(setting["seat"]))
+        if temp < distinct:
+            best_seat = used_seats[i]
+            distinct = temp
+    return best_seat
 
 
 def set_begintime():
-    import datetime
     time = 1541347200
     date = setting['date']
-    if date == 'today':
+    if date == 'today' and datetime.datetime.now().hour < 22:
         time = 1541347200 - 3600 * 24
     date = datetime.datetime.strptime('2018-11-04', '%Y-%m-%d')
     sec = 86400
@@ -61,39 +67,46 @@ def set_begintime():
     return begintime
 
 
-def get_data_forms(data_json):
-    data_forms = []
+def get_data_form(data_json):
+    beginTime = setting['beginTime']
+    duration = setting['duration']
+
+    search_data_form = {
+    'beginTime': set_begintime() + beginTime * 3600,
+    'duration': duration * 3600,
+    'num': 1,
+    'space_category[category_id]' : 591,
+    'space_category[content_id]' : '',
+    }
+
     studyroom = setting["studyroom"]
     while(studyroom):
         if studyroom == "3S" or studyroom == "3s":
-            seats = list(SEATS.t_s[i] for i in setting["seats"])
+            seat = SEATS.t_s[setting["seat"]]
+            search_data_form['space_category[content_id]'] = 31
             break
         elif studyroom == "3N" or studyroom == "3n":
-            seats = list(SEATS.t_n[i] for i in setting["seats"])
+            seat = SEATS.t_n[setting["seat"]]
+            search_data_form['space_category[content_id]'] = 37
             break
         elif studyroom == "2S" or studyroom == "2s":
-            seats = list(SEATS.s_s[i] for i in setting["seats"])
+            seat = SEATS.s_s[setting["seat"]]
+            search_data_form['space_category[content_id]'] = 36
             break
         elif studyroom == "2N" or studyroom == "2n":
-            seats = list(SEATS.s_n[i] for i in setting["seats"])
+            seat = SEATS.s_n[setting["seat"]]
+            search_data_form['space_category[content_id]'] = 35
             break
         break
-    seatBooker = Booker
-    for i in seats:
-        data_form = {
-        'beginTime': '',
-        'duration': '',
-        'seats[0]': '',
-        'seatBookers[0]': ''
-        }
-        beginTime = setting['beginTime']
-        duration = setting['duration']
-        data_form['seatBookers[0]'] = seatBooker
-        data_form['beginTime'] = set_begintime() + beginTime * 3600
-        data_form['duration'] = duration * 3600   
-        data_form['seats[0]'] = i
-        data_forms.append(data_form)
-    return data_forms
+    
+    data_form = {
+    'beginTime': set_begintime() + beginTime * 3600,
+    'duration': duration * 3600,
+    'seats[0]': seat,
+    'seatBookers[0]': json.loads(login.text)['id']
+    }
+
+    return data_form,search_data_form
 
 
 def connecting(data_form):
@@ -123,22 +136,51 @@ setting = get_setting()
 data_json = get_data_json()
 login = requests.post("https://jxnu.huitu.zhishulib.com/api/1/login", json = data_json)
 cookies = login.cookies.get_dict()
-Booker = json.loads(login.text)['id']
-data_forms = get_data_forms(data_json)
+data_form,search_data_form = get_data_form(data_json)
 
 
-r = connecting(data_forms[0])
+r = connecting(data_form)
 preview = json.loads(r.text)
 result = preview['DATA']['result']
-n = len(data_forms)
 while result == 'fail':
     logging.error(preview['DATA']['msg'])
-    n = n+1
-    # print(data_forms[n%len(data_forms)]['seats[0]'])
-    r = connecting(data_forms[n%len(data_forms)])
+    if '已经被其他人锁定或占用' in preview['DATA']['msg']:
+        used_seats = search_used_seats()
+        while(not used_seats):
+            used_seats = search_used_seats()
+        best_seat = get_best_seat(used_seats)
+        data_form['seats[0]'] = best_seat
+    r = connecting(data_form)
     print(r)
     preview = json.loads(r.text)
     result = preview['DATA']['result']
 
+
 if result == 'success':
     logging.info("succeed!")
+
+
+
+
+
+
+
+
+
+# def get_cookies(data_json):
+#     import http.cookiejar as cj
+#     s = requests.session()
+#     s.cookies = cj.LWPCookieJar()
+#     s.post("https://jxnu.huitu.zhishulib.com/api/1/login", json = data_json )
+#     s.close()
+#     fp = open("cookies.txt", "r")
+#     t = fp.readlines()
+#     fp.close()
+#     cookies = ''
+#     for i in t[1:]:
+#         start_pos = i.find("Set-Cookie3: ")+13
+#         end_pos = i.find(";")+1
+#         i = i[start_pos:end_pos]
+#         i = i.replace('\"','')
+#         cookies += i
+#     return cookies
