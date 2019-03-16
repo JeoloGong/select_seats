@@ -35,6 +35,9 @@ def search_used_seats():
     data = search_data_form, cookies = cookies)
     all_seats = json.loads(r.text)['data']['POIs']
     used_seats = {}
+    auto_occupied_seats = json.loads(r.text)['data']['bestPairSeats']['seats']
+    for i in auto_occupied_seats:
+        used_seats[i['title']] = i['id']
     for i in all_seats:
         if i['state'] == 0:
             used_seats[i['title']] = i['id']
@@ -46,7 +49,8 @@ def get_best_seat(used_seats):
         best_seat = used_seats[setting["seat"]]
         return best_seat
 
-    distinct = 9999
+    distinct = setting["distinct"]
+    best_seat = 0
     for i in used_seats:
         temp = abs(int(i)-int(setting["seat"]))
         if temp < distinct:
@@ -146,10 +150,14 @@ while result == 'fail':
     logging.error(preview['DATA']['msg'])
     if '已经被其他人锁定或占用' in preview['DATA']['msg']:
         used_seats = search_used_seats()
-        while(not used_seats):
-            used_seats = search_used_seats()
         best_seat = get_best_seat(used_seats)
+        while(not best_seat):
+            used_seats = search_used_seats()
+            #print(used_seats)
+            best_seat = get_best_seat(used_seats)
+    
         data_form['seats[0]'] = best_seat
+        
     r = connecting(data_form)
     print(r)
     preview = json.loads(r.text)
