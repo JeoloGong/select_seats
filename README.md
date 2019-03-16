@@ -14,7 +14,8 @@ logging
 "beginTime":10,             //开始时间  
 "duration":12,              //学习时长  
 "studyroom":"3S",           //选择自习室（3楼南:"3S"或"3s"，3楼北:"3N"或"3n"，2楼南:"2S"或"2s"，2楼北:"2N"或"2n"）  
-"seats":"374"               //选择座位，选择的座位没选上可就近匹配  
+"seats":"374",              //选择座位，选择的座位没选上可就近匹配  
+"distinct":12               //优先选择座位距离seat的距离  
 
 ## Usage
 After you built your environment and fill your information into setting.json with the same format, cd to the folder you store the files, and input the command in terminal
