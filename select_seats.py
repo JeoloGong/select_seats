@@ -33,15 +33,18 @@ def get_data_json():
 def search_used_seats():
     r = requests.post("https://jxnu.huitu.zhishulib.com/Seat/Index/searchSeats?LAB_JSON=1",\
     data = search_data_form, cookies = cookies)
-    all_seats = json.loads(r.text)['data']['POIs']
-    used_seats = {}
-    auto_occupied_seats = json.loads(r.text)['data']['bestPairSeats']['seats']
-    for i in auto_occupied_seats:
-        used_seats[i['title']] = i['id']
-    for i in all_seats:
-        if i['state'] == 0:
+    try:
+        all_seats = json.loads(r.text)['data']['POIs']
+        used_seats = {}
+        auto_occupied_seats = json.loads(r.text)['data']['bestPairSeats']['seats']
+        for i in auto_occupied_seats:
             used_seats[i['title']] = i['id']
-    return used_seats
+        for i in all_seats:
+            if i['state'] == 0:
+                used_seats[i['title']] = i['id']
+        return used_seats
+    except:
+        return {}
 
 
 def get_best_seat(used_seats):
