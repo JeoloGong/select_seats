@@ -5,6 +5,12 @@ import sys
 import requests
 import SEATS
 
+headers = {
+    'Host': 'jxnu.huitu.zhishulib.com',
+    'Origin': 'https://jxnu.huitu.zhishulib.com',
+    'Referer': 'https://jxnu.huitu.zhishulib.com/',
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.132 Safari/537.36'
+}
 
 def get_setting():
     with open(sys.argv[1],"r") as f:
@@ -32,7 +38,7 @@ def get_data_json():
 
 def search_used_seats():
     r = requests.post("https://jxnu.huitu.zhishulib.com/Seat/Index/searchSeats?LAB_JSON=1",\
-    data = search_data_form, cookies = cookies)
+    headers=headers, data = search_data_form, cookies = cookies)
     try:
         all_seats = json.loads(r.text)['data']['POIs']
         used_seats = {}
@@ -119,7 +125,7 @@ def get_data_form(data_json):
 def connecting(data_form):
     try:
         r = requests.post('https://jxnu.huitu.zhishulib.com/Seat/Index/bookSeats?LAB_JSON=1',\
-        data = data_form, cookies = cookies,timeout = 3 )       
+        headers=headers, data = data_form, cookies = cookies,timeout = 3 )       
         while(r.status_code!=200):
             logging.info("status_code = "+ r.status_code + ", retry...")
             return connecting(data_form)
@@ -141,7 +147,7 @@ logging.basicConfig(filename='status.log', level=logging.DEBUG, format=LOG_FORMA
 
 setting = get_setting()
 data_json = get_data_json()
-login = requests.post("https://jxnu.huitu.zhishulib.com/api/1/login", json = data_json)
+login = requests.post("https://jxnu.huitu.zhishulib.com/api/1/login", json = data_json, headers=headers)
 cookies = login.cookies.get_dict()
 data_form,search_data_form = get_data_form(data_json)
 
