@@ -5,7 +5,7 @@ One the one hand, using the script can reduce personal unnecessary	operations to
 Python  
 requests  
 logging  
-(All in the last version can run)  
+(All in the last version)  
 
 ## Parameter Setting
 "number":"************",    //学号  
