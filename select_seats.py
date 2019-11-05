@@ -14,6 +14,7 @@ headers = {
 
 def get_setting():
     with open(sys.argv[1],"r") as f:
+    #with open("setting.json", "r") as f:
         setting = json.load(f)
     return setting
 
